@@ -30,6 +30,9 @@ from avdc.utility.image import (cropImage,
 from avdc.utility.misc import parseVID, concurrentMap
 from server import app
 from server import db_api
+from avdc.utility.translator import TranslateMetadata
+
+
 
 
 def extract_vid(fn: Callable[[str], Any]):
@@ -140,13 +143,14 @@ def GetMetadataByVID(vid: str, update: bool = False, *args, **kwargs) -> Optiona
         if is_valid_metadata(m):
             return m
 
-    m = _getRemoteMetadata(vid, *args, **kwargs)
+    m = TranslateMetadata(_getRemoteMetadata(vid, *args, **kwargs))
     if not is_valid_metadata(m):
         return
 
     # store to database
     db_api.StoreMetadata(m, update=update)
     app.logger.info(f'store {m.vid} to database')
+    print(m)
     return m
 
 
@@ -275,14 +279,3 @@ def GetBackdropImageSizeByVID(vid: str, *args, **kwargs) -> Optional[tuple[int, 
     return cover.height, cover.width  # height, width
 
 
-if __name__ == '__main__':
-    # print(GetMetadataByVID('abp-233', update=True))
-    # print(GetActressByName('通野未帆'))
-    print(_getRemoteMetadata('100518-766'))
-    # models.UpdateMetadata(m)
-
-    # print(str_to_bool('true'))
-    # print(str_to_bool('True'))
-    # print(str_to_bool('1'))
-    # print(str_to_bool('0'))
-    # print(str_to_bool('idk'))
